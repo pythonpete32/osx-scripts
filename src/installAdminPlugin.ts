@@ -1,21 +1,21 @@
+import { activeContractsList } from "@aragon/osx-ethers";
 import {
-    PluginSetupProcessor,
-    PluginSetupProcessor__factory,
-    activeContractsList,
-} from '@aragon/osx-ethers';
-import { ethers } from 'ethers';
-import { ApplyInstallationParams, DaoAction, MetadataAbiInput, PrepareInstallationParams, PrepareInstallationStep, PrepareInstallationStepValue } from '@aragon/sdk-client-common';
-import { ProposalCreationSteps, VoteValues } from '@aragon/sdk-client';
-import { client, tokenVotingClient } from './lib/sdk';
-import { getWallet, hexToBytes, getLogFromReceipt } from './lib/helpers';
-import { AllowedNetwork } from './lib/constants';
+    ApplyInstallationParams,
+    DaoAction,
+    MetadataAbiInput,
+    PrepareInstallationParams,
+} from "@aragon/sdk-client-common";
+import { VoteValues } from "@aragon/sdk-client";
+import { client, tokenVotingClient } from "./lib/sdk";
+import { getWallet } from "./lib/helpers";
+import { AllowedNetwork } from "./lib/constants";
 const log = console.log;
 
-// ======================= *** CONFIG *** ===================== 
+// ======================= *** CONFIG *** =====================
 
 // ***NOTE***: The configured Private Key must be Able to create proposals on the DAO
-const DAO_ADDRESS_OR_ENS = 'testinstall.dao.eth'
-const NETWORK: AllowedNetwork = 'goerli';
+const DAO_ADDRESS_OR_ENS = "testinstall.dao.eth";
+const NETWORK: AllowedNetwork = "goerli";
 
 // ============================================================
 // 0. Setup: Get all the addresses and contracts
@@ -25,21 +25,18 @@ const deployer = getWallet();
 const aragonClient = client(NETWORK);
 const votingClient = tokenVotingClient(NETWORK);
 
-
 // We are going to use the admin repo because its super simple and deploying our own repo can already be done with the cli
-const adminRepoAddress = activeContractsList[NETWORK]["admin-repo"]
-
+const adminRepoAddress = activeContractsList[NETWORK]["admin-repo"];
 
 // get the dao details
-const daoDetails = await aragonClient.methods.getDao(DAO_ADDRESS_OR_ENS)
-if (!daoDetails) throw new Error('DAO not found');
+const daoDetails = await aragonClient.methods.getDao(DAO_ADDRESS_OR_ENS);
+if (!daoDetails) throw new Error("DAO not found");
 
 const DAO_ADDRESS = daoDetails.address;
-const VOTING_APP_ADDRESS = daoDetails.plugins[0].instanceAddress
+const VOTING_APP_ADDRESS = daoDetails.plugins[0].instanceAddress;
 
-log("DAO Contract: ", DAO_ADDRESS)
-log("Voting Plugin: ", VOTING_APP_ADDRESS)
-
+log("DAO Contract: ", DAO_ADDRESS);
+log("Voting Plugin: ", VOTING_APP_ADDRESS);
 
 // ==============================================================
 // 1. PrepareInstallation: Using the PluginSetupProcessor, prepare the installation
@@ -51,15 +48,15 @@ log("Voting Plugin: ", VOTING_APP_ADDRESS)
 // https://devs.aragon.org/docs/osx/how-to-guides/plugin-development/publication/metadata
 const adminSetupAbiMetadata: MetadataAbiInput[] = [
     {
-        "internalType": "address",
-        "name": "member",
-        "type": "address",
-        "description": "The address of the initial admin."
+        internalType: "address",
+        name: "member",
+        type: "address",
+        description: "The address of the initial admin.",
     },
-]
+];
 
 // 1b. ***Prepare the installation params***
-const adminSetupParams = [deployer.address]
+const adminSetupParams = [deployer.address];
 
 // 1c. ***Prepare the installation***
 const prepareInstallParams: PrepareInstallationParams = {
@@ -67,12 +64,13 @@ const prepareInstallParams: PrepareInstallationParams = {
     pluginRepo: adminRepoAddress,
     installationAbi: adminSetupAbiMetadata,
     installationParams: adminSetupParams,
-}
+};
 
-log("Prepare Installation...")
+log("Prepare Installation...");
 // 1d. ***Call the prepareInstallation() on the SDK **
 // This returns an async generator that will return the steps as they are completed
-const prepareSteps = aragonClient.methods.prepareInstallation(prepareInstallParams)
+const prepareSteps =
+    aragonClient.methods.prepareInstallation(prepareInstallParams);
 
 // 1e. ***Iterate through the steps***
 const prepareInstallStep1 = await (await prepareSteps.next()).value;
@@ -82,23 +80,22 @@ const prepareInstallStep2 = await (await prepareSteps.next()).value;
 log("Installation Data: ", prepareInstallStep2);
 
 // this is already an object that has all the data we need to apply the installation. it also has the Key from the iterator but we dont need that
-const installdata = prepareInstallStep2 satisfies ApplyInstallationParams
-
-
+const installdata = prepareInstallStep2 satisfies ApplyInstallationParams;
 
 // ==============================================================
 // 2. Create Proposal to Apply install: Using the PluginSetupProcessor, use the SDK to get the set of actions and create a proposal
 // https://github.com/aragon/osx/blob/a52bbae69f78e74d6a17647370ccfa2f2ea9bbf0/packages/contracts/src/framework/plugin/setup/PluginSetupProcessor.sol#L287-L288
 // ==============================================================
 
-
-
 // 2a. ***Encode the actions***
-// Here we use the client to create the encoded actions. This creates 3 actions, 
-// [0] Grants the PSP permission to install, 
-// [1] Installs the plugin, 
+// Here we use the client to create the encoded actions. This creates 3 actions,
+// [0] Grants the PSP permission to install,
+// [1] Installs the plugin,
 // [2] Removes the PSP permission to install
-const daoActions: DaoAction[] = aragonClient.encoding.applyInstallationAction(DAO_ADDRESS, installdata);
+const daoActions: DaoAction[] = aragonClient.encoding.applyInstallationAction(
+    DAO_ADDRESS,
+    installdata,
+);
 
 // 2b. ***Pin the metadata***
 const metadataUri: string = await votingClient.methods.pinMetadata({
@@ -127,9 +124,7 @@ const createProposalSteps = votingClient.methods.createProposal({
     executeOnPass: true, // execute on pass
     startDate: new Date(0), // Start immediately
     endDate: new Date(0), // uses minimum voting duration
-})
-
-
+});
 
 // 2d. ***Iterate through the steps***
 const createProposalStep1Value = await (await createProposalSteps.next()).value;
