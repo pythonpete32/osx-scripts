@@ -6,9 +6,9 @@ import {
     PrepareInstallationParams,
 } from "@aragon/sdk-client-common";
 import { VoteValues } from "@aragon/sdk-client";
-import { client, tokenVotingClient } from "./lib/sdk";
-import { getWallet } from "./lib/helpers";
-import { AllowedNetwork } from "./lib/constants";
+import { Client, TokenVotingClient } from "../lib/sdk";
+import { getWallet } from "../lib/helpers";
+import { AllowedNetwork } from "../lib/constants";
 const log = console.log;
 
 // ======================= *** CONFIG *** =====================
@@ -22,14 +22,14 @@ const NETWORK: AllowedNetwork = "goerli";
 // ============================================================
 // ***0a. Setup Aragon stuff***
 const deployer = getWallet();
-const aragonClient = client(NETWORK);
-const votingClient = tokenVotingClient(NETWORK);
+const client = Client(NETWORK);
+const tokenVotingClient = TokenVotingClient(NETWORK);
 
 // We are going to use the admin repo because its super simple and deploying our own repo can already be done with the cli
 const adminRepoAddress = activeContractsList[NETWORK]["admin-repo"];
 
 // get the dao details
-const daoDetails = await aragonClient.methods.getDao(DAO_ADDRESS_OR_ENS);
+const daoDetails = await client.methods.getDao(DAO_ADDRESS_OR_ENS);
 if (!daoDetails) throw new Error("DAO not found");
 
 const DAO_ADDRESS = daoDetails.address;
@@ -70,7 +70,7 @@ log("Prepare Installation...");
 // 1d. ***Call the prepareInstallation() on the SDK **
 // This returns an async generator that will return the steps as they are completed
 const prepareSteps =
-    aragonClient.methods.prepareInstallation(prepareInstallParams);
+    client.methods.prepareInstallation(prepareInstallParams);
 
 // 1e. ***Iterate through the steps***
 const prepareInstallStep1 = await (await prepareSteps.next()).value;
@@ -92,13 +92,13 @@ const installdata = prepareInstallStep2 satisfies ApplyInstallationParams;
 // [0] Grants the PSP permission to install,
 // [1] Installs the plugin,
 // [2] Removes the PSP permission to install
-const daoActions: DaoAction[] = aragonClient.encoding.applyInstallationAction(
+const daoActions: DaoAction[] = client.encoding.applyInstallationAction(
     DAO_ADDRESS,
     installdata,
 );
 
 // 2b. ***Pin the metadata***
-const metadataUri: string = await votingClient.methods.pinMetadata({
+const metadataUri: string = await tokenVotingClient.methods.pinMetadata({
     title: "Test metadata",
     summary: "This is a test proposal",
     description: "This is the description of a long test proposal",
@@ -116,7 +116,7 @@ const metadataUri: string = await votingClient.methods.pinMetadata({
 
 // 2c. ***Create the proposal***
 // this returns an export generator that will create the proposal
-const createProposalSteps = votingClient.methods.createProposal({
+const createProposalSteps = tokenVotingClient.methods.createProposal({
     metadataUri,
     pluginAddress: VOTING_APP_ADDRESS,
     actions: daoActions,

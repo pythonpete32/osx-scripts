@@ -9,7 +9,8 @@ export async function getLogFromReceipt(receipt: ethers.providers.TransactionRec
 }
 
 
-export function hexToBytes(hexString: string): Uint8Array {
+export function hexToBytes(inputHexString: string): Uint8Array {
+    let hexString = inputHexString;
     if (!hexString) return new Uint8Array();
     else if (!/^(0x)?[0-9a-fA-F]*$/.test(hexString)) {
         throw new Error("Invalid hex string");

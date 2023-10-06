@@ -1,5 +1,12 @@
 import { Wallet } from "@ethersproject/wallet";
-import { AddresslistVotingClient, Client, Context, ContextParams, MultisigClient, TokenVotingClient } from "@aragon/sdk-client";
+import {
+    ContextParams,
+    Client as Client_,
+    Context as Context_,
+    MultisigClient as MultisigClient_,
+    TokenVotingClient as TokenVotingClient_,
+    AddresslistVotingClient as AddresslistVotingClient_,
+} from "@aragon/sdk-client";
 import { AllowedNetwork, networkRPC } from "./constants";
 import { activeContractsList } from "@aragon/osx-ethers";
 
@@ -19,7 +26,7 @@ const getContectParams = (network: AllowedNetwork): ContextParams => {
     return {
         network,
         signer: new Wallet(PRIVATE_KEY),
-        daoFactoryAddress: activeContractsList[network]?.["DAOFactory"] || "",
+        daoFactoryAddress: activeContractsList[network]?.DAOFactory || "",
         web3Providers: [RPC_URL],
         ipfsNodes: [
             {
@@ -37,8 +44,8 @@ const getContectParams = (network: AllowedNetwork): ContextParams => {
     }
 }
 
-export const context = (network: AllowedNetwork) => new Context(getContectParams(network));
-export const client = (network: AllowedNetwork) => new Client(context(network));
-export const multisigClient = (network: AllowedNetwork) => new MultisigClient(context(network));
-export const tokenVotingClient = (network: AllowedNetwork) => new TokenVotingClient(context(network));
-export const addressListVotingClient = (network: AllowedNetwork) => new AddresslistVotingClient(context(network));
+export const Context = (network: AllowedNetwork) => new Context_(getContectParams(network));
+export const Client = (network: AllowedNetwork) => new Client_(Context(network));
+export const MultisigClient = (network: AllowedNetwork) => new MultisigClient_(Context(network));
+export const TokenVotingClient = (network: AllowedNetwork) => new TokenVotingClient_(Context(network));
+export const AddressListVotingClient = (network: AllowedNetwork) => new AddresslistVotingClient_(Context(network));
