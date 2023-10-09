@@ -22,10 +22,10 @@ RPC_URL=''
 
 ## 🚀 Usage
 
-Simply open one of the scripts in `./src`, modify the paraeters and run with
+Simply open one of the scripts in `./src`, modify the parameters and run with
 
 ```bash
-bun src/installAdminPlugin.ts
+bun src/client/installAdminPlugin.ts
 ```
 
 ## 🤝 Contributing
