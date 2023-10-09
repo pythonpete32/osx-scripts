@@ -25,7 +25,7 @@ RPC_URL=''
 Simply open one of the scripts in `./src`, modify the paraeters and run with
 
 ```bash
-bun src/installAdminPlugin.ts
+bun src/client/installAdminPlugin.ts
 ```
 
 ## 🤝 Contributing
