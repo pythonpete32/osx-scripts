@@ -6,9 +6,9 @@ import {
   PrepareInstallationParams,
 } from "@aragon/sdk-client-common";
 import { VoteValues } from "@aragon/sdk-client";
-import { Client, TokenVotingClient } from "../lib/sdk";
 import { getWallet } from "../lib/helpers";
 import { AllowedNetwork } from "../lib/constants";
+import { createClient, createTokenVotingClient } from "../lib/sdk";
 const log = console.log;
 
 // ======================= *** CONFIG *** =====================
@@ -22,8 +22,8 @@ const NETWORK: AllowedNetwork = "goerli";
 // ============================================================
 // ***0a. Setup Aragon stuff***
 const deployer = getWallet();
-const client = Client(NETWORK);
-const tokenVotingClient = TokenVotingClient(NETWORK);
+const client = await createClient(NETWORK, true)
+const tokenVotingClient = await createTokenVotingClient(NETWORK, true);
 
 // We are going to use the admin repo because its super simple and deploying our own repo can already be done with the cli
 const adminRepoAddress = activeContractsList[NETWORK]["admin-repo"];

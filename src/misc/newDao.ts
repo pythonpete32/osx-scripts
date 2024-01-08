@@ -7,11 +7,12 @@ import {
   VotingMode,
 } from "@aragon/sdk-client";
 import { GasFeeEstimation } from "@aragon/sdk-client-common";
-import { Client } from "../lib/sdk";
+import { createClient } from "../lib/sdk";
+
 
 // Instantiate the general purpose client from the Aragon OSx SDK context.
 const NETWORK = "goerli";
-const client = Client(NETWORK);
+const client = await createClient(NETWORK);
 
 const metadata: DaoMetadata = {
   name: "My DAO",
