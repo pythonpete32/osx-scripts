@@ -1,9 +1,9 @@
 import { activeContractsList } from "@aragon/osx-ethers";
 import {
-    ApplyInstallationParams,
-    DaoAction,
-    MetadataAbiInput,
-    PrepareInstallationParams,
+  ApplyInstallationParams,
+  DaoAction,
+  MetadataAbiInput,
+  PrepareInstallationParams,
 } from "@aragon/sdk-client-common";
 import { VoteValues } from "@aragon/sdk-client";
 import { Client, TokenVotingClient } from "../lib/sdk";
@@ -47,12 +47,12 @@ log("Voting Plugin: ", VOTING_APP_ADDRESS);
 // This is the metadata that is needed to initialize the plugin. Its the the same thing that is encoded in the setup contract
 // https://devs.aragon.org/docs/osx/how-to-guides/plugin-development/publication/metadata
 const adminSetupAbiMetadata: MetadataAbiInput[] = [
-    {
-        internalType: "address",
-        name: "member",
-        type: "address",
-        description: "The address of the initial admin.",
-    },
+  {
+    internalType: "address",
+    name: "member",
+    type: "address",
+    description: "The address of the initial admin.",
+  },
 ];
 
 // 1b. ***Prepare the installation params***
@@ -60,17 +60,16 @@ const adminSetupParams = [deployer.address];
 
 // 1c. ***Prepare the installation***
 const prepareInstallParams: PrepareInstallationParams = {
-    daoAddressOrEns: DAO_ADDRESS,
-    pluginRepo: adminRepoAddress,
-    installationAbi: adminSetupAbiMetadata,
-    installationParams: adminSetupParams,
+  daoAddressOrEns: DAO_ADDRESS,
+  pluginRepo: adminRepoAddress,
+  installationAbi: adminSetupAbiMetadata,
+  installationParams: adminSetupParams,
 };
 
 log("Prepare Installation...");
 // 1d. ***Call the prepareInstallation() on the SDK **
 // This returns an async generator that will return the steps as they are completed
-const prepareSteps =
-    client.methods.prepareInstallation(prepareInstallParams);
+const prepareSteps = client.methods.prepareInstallation(prepareInstallParams);
 
 // 1e. ***Iterate through the steps***
 const prepareInstallStep1 = await (await prepareSteps.next()).value;
@@ -92,38 +91,35 @@ const installdata = prepareInstallStep2 satisfies ApplyInstallationParams;
 // [0] Grants the PSP permission to install,
 // [1] Installs the plugin,
 // [2] Removes the PSP permission to install
-const daoActions: DaoAction[] = client.encoding.applyInstallationAction(
-    DAO_ADDRESS,
-    installdata,
-);
+const daoActions: DaoAction[] = client.encoding.applyInstallationAction(DAO_ADDRESS, installdata);
 
 // 2b. ***Pin the metadata***
 const metadataUri: string = await tokenVotingClient.methods.pinMetadata({
-    title: "Test metadata",
-    summary: "This is a test proposal",
-    description: "This is the description of a long test proposal",
-    resources: [
-        {
-            url: "https://thforumurl.com",
-            name: "Forum",
-        },
-    ],
-    media: {
-        header: "https://fileserver.com/header.png",
-        logo: "https://fileserver.com/logo.png",
+  title: "Test metadata",
+  summary: "This is a test proposal",
+  description: "This is the description of a long test proposal",
+  resources: [
+    {
+      url: "https://thforumurl.com",
+      name: "Forum",
     },
+  ],
+  media: {
+    header: "https://fileserver.com/header.png",
+    logo: "https://fileserver.com/logo.png",
+  },
 });
 
 // 2c. ***Create the proposal***
 // this returns an export generator that will create the proposal
 const createProposalSteps = tokenVotingClient.methods.createProposal({
-    metadataUri,
-    pluginAddress: VOTING_APP_ADDRESS,
-    actions: daoActions,
-    creatorVote: VoteValues.YES, // creator votes yes
-    executeOnPass: true, // execute on pass
-    startDate: new Date(0), // Start immediately
-    endDate: new Date(0), // uses minimum voting duration
+  metadataUri,
+  pluginAddress: VOTING_APP_ADDRESS,
+  actions: daoActions,
+  creatorVote: VoteValues.YES, // creator votes yes
+  executeOnPass: true, // execute on pass
+  startDate: new Date(0), // Start immediately
+  endDate: new Date(0), // uses minimum voting duration
 });
 
 // 2d. ***Iterate through the steps***

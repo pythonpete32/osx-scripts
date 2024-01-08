@@ -9,3 +9,14 @@ export const networkRPC = {
 }
 
 export type AllowedNetwork = keyof typeof networkRPC;
+
+export const networkIDs = {
+    mainnet: 1,      
+    goerli: 5,       
+    polygon: 137,   
+    mumbai: 80001,  
+    base: 8453,
+    baseGoerli: 84531,  
+    local: 1337     
+}
+export type AllowedNetworkIds = keyof typeof networkIDs
